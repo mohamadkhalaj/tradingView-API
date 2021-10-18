@@ -16,9 +16,11 @@ First you should select category type and searching text (by search() function i
 ```
 category list: 'stock' | 'futures' | 'forex' | 'cfd' | 'crypto' | 'index' | 'economic'
 ```
-example: 
-  category: crypto
-  searching text: btc
+# Example
+```python
+data = search('btcusdt', 'crypto')
+```
 
-then if results found it will be shown.
+if any results found it will be shown.
+
 
