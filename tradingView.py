@@ -10,7 +10,11 @@ def search(query, type):
 	res = requests.get(f'https://symbol-search.tradingview.com/symbol_search/?text={query}&type={type}')
 	if res.status_code == 200:
 		res = res.json()
-		return res[0]
+		if len(res) == 0:
+			print('Nothing Found!')
+			return False	
+		else:
+			return res[0]
 	else:
 		print('Network Error!')
 
@@ -43,13 +47,14 @@ def main():
 
 	# serach btcusdt from crypto category
 	data = search('btcusdt', 'crypto')
-
+	if not data:
+		exit()
 	symbol_name = data['symbol']
 	broker = data['exchange']
 	symbol_id = f'{broker.upper()}:{symbol_name.upper()}'
-	
+		
 	print(symbol_id, end='\n\n')
-
+	
 	# create tunnel
 	ws = create_connection(tradingViewSocket, headers = headers)
 	session = generateSession()
@@ -63,9 +68,7 @@ def main():
 			result = ws.recv()
 			if 'quote_completed' in result or 'session_id' in result:
 				continue
-
 			Res = re.findall("^.*?({.*)$", result)
-			
 			if len(Res) != 0:
 				jsonRes = json.loads(Res[0])
 
@@ -79,7 +82,6 @@ def main():
 				if len(pingStr) != 0:
 					pingStr = pingStr[0]
 					ws.send("~m~" + str(len(pingStr)) + "~m~" + pingStr)
-
 		except Exception as e:
 			continue
 
