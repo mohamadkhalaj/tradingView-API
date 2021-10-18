@@ -1,5 +1,5 @@
 # tradingView-API
-tradingview socket api for real time prices.
+tradingview socket api for fetching real time prices.
 
 ## How to run
 
