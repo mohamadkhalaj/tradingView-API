@@ -95,12 +95,12 @@ def main(pair, market):
     ws = create_connection(tradingViewSocket, headers=headers)
     session = generateSession()
 
-	# Send messages
+    # Send messages
     sendMessage(ws, "quote_create_session", [session])
     sendMessage(ws, "quote_set_fields", [session, "lp"])
     sendMessage(ws, "quote_add_symbols", [session, symbol_id])
 
-	# Start job
+    # Start job
     socketJob(ws)
 
 
