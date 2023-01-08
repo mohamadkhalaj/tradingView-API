@@ -70,7 +70,11 @@ def socketJob(ws):
             else:
                 # ping packet
                 sendPingPacket(ws, result)
-        except:
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            exit(0)
+        except Exception as e:
+            print(e)
             continue
 
 
@@ -105,6 +109,6 @@ def main(pair, market):
 
 
 if __name__ == "__main__":
-    pair = "btc"
+    pair = "btcusdt"
     market = "crypto"
     main(pair, market)
