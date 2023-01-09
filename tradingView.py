@@ -74,15 +74,17 @@ def socketJob(ws):
             print("\nGoodbye!")
             exit(0)
         except Exception as e:
-            print(e)
+            print(f"ERROR: {e}\nTradingView message: {result}")
             continue
 
 
 def getSymbolId(pair, market):
     data = search(pair, market)
-
     symbol_name = data["symbol"]
-    broker = data["exchange"]
+    try:
+        broker = data["prefix"]
+    except KeyError:
+        broker = data["exchange"]
     symbol_id = f"{broker.upper()}:{symbol_name.upper()}"
     print(symbol_id, end="\n\n")
     return symbol_id
