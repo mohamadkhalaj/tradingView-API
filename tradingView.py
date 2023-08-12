@@ -7,22 +7,21 @@ import requests
 from websocket import create_connection
 
 
+# Search for a symbol based on query and category
 def search(query, category):
-    # category = 'stock' | 'futures' | 'forex' | 'cfd' | 'crypto' | 'index' | 'economic'
-    # query = what you want to search!
-    # it returns first matching item
-    res = requests.get(
-        f"https://symbol-search.tradingview.com/symbol_search/?text={query}&type={category}"
-    )
-    if res.status_code == 200:
-        res = res.json()
-        assert len(res) != 0, "Nothing Found."
-        return res[0]
+    url = f"https://symbol-search.tradingview.com/symbol_search/?text={query}&type={category}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        assert len(data) != 0, "Nothing Found."
+        return data[0]
     else:
         print("Network Error!")
         exit(1)
 
 
+# Generate a random session ID
 def generate_session():
     string_length = 12
     letters = string.ascii_lowercase
@@ -30,22 +29,27 @@ def generate_session():
     return "qs_" + random_string
 
 
+# Prepend header to content
 def prepend_header(content):
     return f"~m~{len(content)}~m~{content}"
 
 
+# Construct a JSON message
 def construct_message(func, param_list):
     return json.dumps({"m": func, "p": param_list}, separators=(",", ":"))
 
 
+# Create a full message with header
 def create_message(func, param_list):
     return prepend_header(construct_message(func, param_list))
 
 
+# Send a message over the WebSocket connection
 def send_message(ws, func, args):
     ws.send(create_message(func, args))
 
 
+# Send a ping packet
 def send_ping_packet(ws, result):
     ping_str = re.findall(".......(.*)", result)
     if ping_str:
@@ -53,6 +57,7 @@ def send_ping_packet(ws, result):
         ws.send(f"~m~{len(ping_str)}~m~{ping_str}")
 
 
+# Handle WebSocket messages
 def socket_job(ws):
     while True:
         try:
@@ -69,11 +74,8 @@ def socket_job(ws):
                     volume = prefix["v"].get("volume", None)
                     change = prefix["v"].get("ch", None)
                     change_percentage = prefix["v"].get("chp", None)
-                    print(
-                        f"{symbol} -> {price=}, {change=}, {change_percentage=}, {volume=}"
-                    )
+                    print(f"{symbol} -> {price=}, {change=}, {change_percentage=}, {volume=}")
             else:
-                # ping packet
                 send_ping_packet(ws, result)
         except KeyboardInterrupt:
             print("\nGoodbye!")
@@ -83,6 +85,7 @@ def socket_job(ws):
             continue
 
 
+# Get symbol ID based on pair and market
 def get_symbol_id(pair, market):
     data = search(pair, market)
     symbol_name = data["symbol"]
@@ -92,17 +95,15 @@ def get_symbol_id(pair, market):
     return symbol_id
 
 
+# Main function to establish WebSocket connection and start job
 def main(pair, market):
-    # search btcusdt from crypto category
     symbol_id = get_symbol_id(pair, market)
 
-    # create tunnel
     trading_view_socket = "wss://data.tradingview.com/socket.io/websocket"
     headers = json.dumps({"Origin": "https://data.tradingview.com"})
     ws = create_connection(trading_view_socket, headers=headers)
     session = generate_session()
 
-    # Send messages
     send_message(ws, "quote_create_session", [session])
     send_message(
         ws,
@@ -117,7 +118,7 @@ def main(pair, market):
         ],
     )
     send_message(ws, "quote_add_symbols", [session, symbol_id])
-    # Start job
+
     socket_job(ws)
 
 
