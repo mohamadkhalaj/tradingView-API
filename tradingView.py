@@ -111,7 +111,6 @@ def main(pair, market):
         [
             session,
             "lp",
-            "low_price",
             "volume",
             "ch",
             "chp",
